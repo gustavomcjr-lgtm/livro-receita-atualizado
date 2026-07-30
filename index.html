@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Livro de Receitas - Com QR Code</title>
+    
+    <!-- Configurações para PWA -->
+    <meta name="theme-color" content="#4a3525">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Receitas">
+
+    <!-- Web App Manifest Embutido via Data URI -->
+    <link rel="manifest" href="data:application/manifest+json;utf8,%7B%22name%22%3A%22Meu%20Livro%20de%20Receitas%22%2C%22short_name%22%3A%22Receitas%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f2ebd9%22%2C%22theme_color%22%3A%22%234a3525%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F3405%2F3405771.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+
+    <!-- Bibliotecas de QR Code (Leitor e Gerador) -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Georgia', 'Segoe UI', serif;
+        }
+
+        body {
+            background-color: #f2ebd9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Banner de Instalação PWA */
+        .pwa-install-banner {
+            display: none;
+            background: #8c5a2b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-pwa {
+            background-color: #f7e7ce;
+            color: #4a3525;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a3525;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Seção de Backup & QR Code */
+        .backup-bar {
+            background: #e6dac3;
+            border: 1px solid #b8a585;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .backup-title {
+            font-weight: bold;
+            color: #4a3525;
+            font-size: 14px;
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-backup {
+            background-color: #4a3525;
+            color: #f7e7ce;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-backup:hover {
+            background-color: #332418;
+        }
+
+        .btn-restore {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-qrcode {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        /* Form com Categoria e Foto */
+        .form-container {
+            background: #fff8eb;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 2px solid #d4c3a3;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #6e441f;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        input[type="text"], input[type="file"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #c8b89b;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #faf6ed;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 70px;
+        }
+
+        button.btn-add {
+            background-color: #8c5a2b;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        /* Seção da Prateleira & Filtros */
+        .shelf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #b8a585;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .shelf-title {
+            color: #4a3525;
+            margin: 0;
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background-color: #e6dac3;
+            border: 1px solid #b8a585;
+            color: #5a4331;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background-color: #8c5a2b;
+            color: white;
+            border-color: #8c5a2b;
+        }
+
+        /* Grid de Livros */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .book-cover {
+            background: linear-gradient(135deg, #7a421d 0%, #4a230c 100%);
+            color: #f7e7ce;
+            height: 270px;
+            border-radius: 6px 12px 12px 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2), inset 10px 0 10px rgba(0,0,0,0.3);
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+
+        .book-cover:hover {
+            transform: translateY(-8px) rotate(-1deg);
+            box-shadow: 8px 12px 20px rgba(0,0,0,0.3);
+        }
+
+        .book-cover::before {
+            content: '';
+            position: absolute;
+            left: 10px; top: 0; bottom: 0;
+            width: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 2px 0 3px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        .book-photo {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid #f7e7ce;
+            margin-top: 5px;
+            z-index: 1;
+        }
+
+        .book-category-tag {
+            background: rgba(247, 231, 206, 0.2);
+            border: 1px solid rgba(247, 231, 206, 0.4);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+            z-index: 1;
+        }
+
+        .book-title {
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            margin: 8px 0;
+            line-height: 1.2;
+            text-transform: uppercase;
+            z-index: 1;
+        }
+
+        .book-badge {
+            font-size: 11px;
+            text-align: center;
+            opacity: 0.8;
+            font-style: italic;
+            z-index: 1;
+        }
+
+        /* Modal Generico */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .open-book {
+            background: #fffdf7;
+            width: 100%;
+            max-width: 850px;
+            min-height: 520px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #d4c3a3;
+        }
+
+        .page {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-left {
+            border-right: 2px solid #e8dec8;
+            background: linear-gradient(to right, #f7f2e6, #fffdf7);
+        }
+
+        .page-right {
+            background: linear-gradient(to left, #f7f2e6, #fffdf7);
+        }
+
+        .page-header {
+            font-size: 12px;
+            color: #8c7b6b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e8dec8;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-recipe-photo {
+            width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #d4c3a3;
+            display: none;
+        }
+
+        .editable {
+            background-color: #fffde7;
+            border: 1px dashed #fbc02d;
+            padding: 10px;
+            border-radius: 6px;
+            outline: none;
+            min-height: 40px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .editable:focus {
+            background-color: #fff9c4;
+            border: 1px solid #f57f17;
+        }
+
+        .recipe-name-input {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a3525;
+            font-family: 'Georgia', serif;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: #8c5a2b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            z-index: 10;
+        }
+
+        .btn-delete-modal {
+            margin-top: auto;
+            background-color: #c0392b;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-generate-qr {
+            margin-top: 10px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Estilo para Modais de QR Code */
+        .qr-modal-content {
+            background: #fff8eb;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            border: 2px solid #d4c3a3;
+        }
+
+        #reader {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #qrcode-container {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .open-book {
+                flex-direction: column;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .page-left {
+                border-right: none;
+                border-bottom: 2px solid #e8dec8;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Banner PWA -->
+    <div class="pwa-install-banner" id="pwaBanner">
+        <span>📲 Instale este app no seu celular!</span>
+        <button class="btn-pwa" id="btnInstallPwa">Instalar</button>
+    </div>
+
+    <h1>📖 Meu Livro de Receitas</h1>
+
+    <!-- Barra de Ferramentas (Backup + QR Code) -->
+    <div class="backup-bar">
+        <span class="backup-title">⚙️ Opções e Compartilhamento:</span>
+        <div class="backup-actions">
+            <button class="btn-qrcode" onclick="abrirLeitorQR()">📷 Escanear QR Code</button>
+            <button class="btn-backup" onclick="exportarBackup()">📥 Baixar Backup</button>
+            <button class="btn-restore" onclick="document.getElementById('input-restore').click()">📤 Restaurar Backup</button>
+            <input type="file" id="input-restore" accept=".json" style="display: none;" onchange="importarBackup(event)">
+        </div>
+    </div>
+
+    <!-- Form de Nova Receita -->
+    <div class="form-container">
+        <h3>Adicionar Novo Livro de Receita</h3>
+        <div class="form-group">
+            <label>Categoria:</label>
+            <select id="categoria">
+                <option value="Doces">🍰 Doces & Sobremesas</option>
+                <option value="Salgados">🥐 Salgados & Lanches</option>
+                <option value="Massas">🍝 Massas & Pratos Principais</option>
+                <option value="Bebidas">🍹 Bebidas & Drinks</option>
+                <option value="Outros">📌 Outros</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Foto da Capa (Opcional):</label>
+            <input type="file" id="foto-input" accept="image/*">
+        </div>
+        <div class="form-group">
+            <input type="text" id="nome" placeholder="Nome da Receita (ex: Bolo de Cenoura)">
+        </div>
+        <div class="form-group">
+            <textarea id="ingredientes" placeholder="Ingredientes (ex: 3 cenouras, 4 ovos, 2 xícaras de açúcar...)"></textarea>
+        </div>
+        <div class="form-group">
+            <textarea id="preparo" placeholder="Modo de Preparo"></textarea>
+        </div>
+        <button class="btn-add" onclick="adicionarReceita()">Criar Livro de Receita</button>
+    </div>
+
+    <!-- Prateleira de Receitas + Filtros -->
+    <div class="shelf-header">
+        <h2 class="shelf-title">Sua Biblioteca</h2>
+        <div class="category-filters">
+            <button class="filter-btn active" onclick="filtrarCategoria('Todas', this)">Todas</button>
+            <button class="filter-btn" onclick="filtrarCategoria('Doces', this)">Doces</button>
+            <button class="filter-btn" onclick="filtrarCategoria('Salgados', this)">Salgados</button>
+            <button class="filter-btn" onclick="filtrarCategoria('Massas', this)">Massas</button>
+            <button class="filter-btn" onclick="filtrarCategoria('Bebidas', this)">Bebidas</button>
+            <button class="filter-btn" onclick="filtrarCategoria('Outros', this)">Outros</button>
+        </div>
+    </div>
+
+    <div class="books-grid" id="books-grid"></div>
+</div>
+
+<!-- Modal (Livro Aberto) -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="open-book">
+        <button class="close-btn" onclick="fecharLivro()">✕</button>
+
+        <div class="page page-left">
+            <img id="modal-foto" class="modal-recipe-photo" src="" alt="Foto da Receita">
+            
+            <div class="page-header">
+                <span>Nome da Receita</span>
+                <span id="modal-categoria-tag" style="color: #8c5a2b; font-weight: bold;"></span>
+            </div>
+            <div class="editable recipe-name-input" id="modal-nome" contenteditable="true" onblur="salvarEdicao('nome')"></div>
+
+            <br>
+
+            <div class="page-header"><span>Ingredientes</span></div>
+            <div class="editable" id="modal-ingredientes" contenteditable="true" onblur="salvarEdicao('ingredientes')" style="flex: 1;"></div>
+        </div>
+
+        <div class="page page-right">
+            <div class="page-header"><span>Modo de Preparo</span></div>
+            <div class="editable" id="modal-preparo" contenteditable="true" onblur="salvarEdicao('preparo')" style="flex: 1;"></div>
+
+            <br>
+            <button class="btn-generate-qr" onclick="gerarQRCodeReceitaAtual()">📲 Gerar QR Code desta Receita</button>
+            <button class="btn-delete-modal" onclick="deletarReceitaAtual()">Excluir Receita</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Escanear QR Code -->
+<div class="modal-overlay" id="modal-scan-qr">
+    <div class="qr-modal-content">
+        <button class="close-btn" onclick="fecharLeitorQR()">✕</button>
+        <h3 style="color: #4a3525; margin-top: 0;">Aponte a Câmera para o QR Code</h3>
+        <div id="reader"></div>
+    </div>
+</div>
+
+<!-- Modal para Mostrar QR Code Gerado -->
+<div class="modal-overlay" id="modal-show-qr">
+    <div class="qr-modal-content">
+        <button class="close-btn" onclick="document.getElementById('modal-show-qr').style.display='none'">✕</button>
+        <h3 style="color: #4a3525; margin-top: 0;">QR Code da Receita</h3>
+        <p style="font-size: 13px; color: #666;">Peça para outra pessoa escanear pelo app dela!</p>
+        <div id="qrcode-container"></div>
+    </div>
+</div>
+
+<script>
+    let receitaAtualId = null;
+    let categoriaAtualFiltro = 'Todas';
+    let html5QrCode = null;
+
+    document.addEventListener('DOMContentLoaded', carregarLivros);
+
+    function obterReceitas() {
+        const receitas = localStorage.getItem('minhas_receitas_book_completo');
+        return receitas ? JSON.parse(receitas) : [];
+    }
+
+    function salvarLista(receitas) {
+        localStorage.setItem('minhas_receitas_book_completo', JSON.stringify(receitas));
+    }
+
+    function adicionarReceita() {
+        const nome = document.getElementById('nome').value.trim();
+        const ingredientes = document.getElementById('ingredientes').value.trim();
+        const preparo = document.getElementById('preparo').value.trim();
+        const categoria = document.getElementById('categoria').value;
+        const fotoInput = document.getElementById('foto-input');
+
+        if (!nome || !ingredientes) {
+            alert('Por favor, preencha pelo menos o Nome e os Ingredientes!');
+            return;
+        }
+
+        const salvarEAtualizar = (fotoBase64 = '') => {
+            const novaReceita = {
+                id: Date.now(),
+                nome: nome,
+                ingredientes: ingredientes,
+                preparo: preparo,
+                categoria: categoria,
+                foto: fotoBase64
+            };
+
+            const receitas = obterReceitas();
+            receitas.push(novaReceita);
+            salvarLista(receitas);
+
+            document.getElementById('nome').value = '';
+            document.getElementById('ingredientes').value = '';
+            document.getElementById('preparo').value = '';
+            document.getElementById('foto-input').value = '';
+
+            carregarLivros();
+        };
+
+        if (fotoInput.files && fotoInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                salvarEAtualizar(e.target.result);
+            };
+            reader.readAsDataURL(fotoInput.files[0]);
+        } else {
+            salvarEAtualizar('');
+        }
+    }
+
+    function filtrarCategoria(cat, elementoBtn) {
+        categoriaAtualFiltro = cat;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        elementoBtn.classList.add('active');
+        carregarLivros();
+    }
+
+    function carregarLivros() {
+        let receitas = obterReceitas();
+        const grid = document.getElementById('books-grid');
+        grid.innerHTML = '';
+
+        if (categoriaAtualFiltro !== 'Todas') {
+            receitas = receitas.filter(r => r.categoria === categoriaAtualFiltro);
+        }
+
+        if (receitas.length === 0) {
+            grid.innerHTML = '<p style="color: #666; grid-column: 1/-1;">Nenhuma receita encontrada nesta categoria.</p>';
+            return;
+        }
+
+        receitas.forEach(receita => {
+            const book = document.createElement('div');
+            book.className = 'book-cover';
+            book.onclick = () => abrirLivro(receita.id);
+
+            const fotoHtml = receita.foto 
+                ? `<img src="${receita.foto}" class="book-photo" alt="Foto">` 
+                : '<div style="height: 90px;"></div>';
+
+            book.innerHTML = `
+                ${fotoHtml}
+                <span class="book-category-tag">${receita.categoria || 'Outros'}</span>
+                <div class="book-title">${receita.nome}</div>
+                <div class="book-badge">📖 Clique para abrir</div>
+            `;
+            grid.appendChild(book);
+        });
+    }
+
+    function abrirLivro(id) {
+        receitaAtualId = id;
+        const receitas = obterReceitas();
+        const receita = receitas.find(r => r.id === id);
+
+        if (!receita) return;
+
+        document.getElementById('modal-nome').innerText = receita.nome;
+        document.getElementById('modal-ingredientes').innerText = receita.ingredientes;
+        document.getElementById('modal-preparo').innerText = receita.preparo || 'Adicione o modo de preparo aqui...';
+        document.getElementById('modal-categoria-tag').innerText = receita.categoria || 'Outros';
+
+        const imgModal = document.getElementById('modal-foto');
+        if (receita.foto) {
+            imgModal.src = receita.foto;
+            imgModal.style.display = 'block';
+        } else {
+            imgModal.style.display = 'none';
+        }
+
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    function fecharLivro() {
+        document.getElementById('modal-overlay').style.display = 'none';
+        carregarLivros();
+    }
+
+    function salvarEdicao(campo) {
+        if (!receitaAtualId) return;
+
+        const receitas = obterReceitas();
+        const index = receitas.findIndex(r => r.id === receitaAtualId);
+
+        if (index !== -1) {
+            const valor = document.getElementById(`modal-${campo}`).innerText;
+            receitas[index][campo] = valor;
+            salvarLista(receitas);
+        }
+    }
+
+    function deletarReceitaAtual() {
+        if (confirm('Tem certeza que deseja excluir esta receita?')) {
+            let receitas = obterReceitas();
+            receitas = receitas.filter(r => r.id !== receitaAtualId);
+            salvarLista(receitas);
+            fecharLivro();
+        }
+    }
+
+    /* SISTEMA DE QR CODE */
+    function abrirLeitorQR() {
+        document.getElementById('modal-scan-qr').style.display = 'flex';
+        
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => {
+                try {
+                    const dadosReceita = JSON.parse(decodedText);
+                    if (dadosReceita.nome && dadosReceita.ingredientes) {
+                        dadosReceita.id = Date.now();
+                        const receitas = obterReceitas();
+                        receitas.push(dadosReceita);
+                        salvarLista(receitas);
+                        
+                        alert(`Receita "${dadosReceita.nome}" importada com sucesso!`);
+                        fecharLeitorQR();
+                        carregarLivros();
+                    } else {
+                        alert('QR Code lido, mas não contém uma receita válida do app.');
+                    }
+                } catch (e) {
+                    alert('Código lido não é uma receita válida.');
+                }
+            },
+            (errorMessage) => {
+                // Erros de leitura contínuos enquanto busca o QR Code
+            }
+        ).catch(err => alert("Erro ao acessar a câmera: " + err));
+    }
+
+    function fecharLeitorQR() {
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('modal-scan-qr').style.display = 'none';
+            }).catch(() => {
+                document.getElementById('modal-scan-qr').style.display = 'none';
+            });
+        } else {
+            document.getElementById('modal-scan-qr').style.display = 'none';
+        }
+    }
+
+    function gerarQRCodeReceitaAtual() {
+        const receitas = obterReceitas();
+        const receita = receitas.find(r => r.id === receitaAtualId);
+
+        if (!receita) return;
+
+        // Versão simplificada para não sobrecarregar o QR Code
+        const objetoQR = {
+            nome: receita.nome,
+            ingredientes: receita.ingredientes,
+            preparo: receita.preparo,
+            categoria: receita.categoria
+        };
+
+        const qrContainer = document.getElementById('qrcode-container');
+        qrContainer.innerHTML = '';
+
+        new QRCode(qrContainer, {
+            text: JSON.stringify(objetoQR),
+            width: 200,
+            height: 200
+        });
+
+        document.getElementById('modal-show-qr').style.display = 'flex';
+    }
+
+    /* BACKUP E RESTAURAÇÃO */
+    function exportarBackup() {
+        const receitas = obterReceitas();
+        if (receitas.length === 0) {
+            alert('Você não tem receitas salvas para exportar!');
+            return;
+        }
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(receitas, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `backup_receitas_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importarBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const receitasImportadas = JSON.parse(e.target.result);
+                if (Array.isArray(receitasImportadas)) {
+                    if (confirm('Restaurar o backup vai substituir todas as receitas atuais. Deseja continuar?')) {
+                        salvarLista(receitasImportadas);
+                        carregarLivros();
+                        alert('Backup restaurado com sucesso!');
+                    }
+                } else {
+                    alert('Arquivo de backup inválido.');
+                }
+            } catch (err) {
+                alert('Erro ao ler o arquivo de backup.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    /* SCRIPT DO SERVICE WORKER E INSTALAÇÃO PWA */
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            const CACHE_NAME = 'receitas-v2';
+            self.addEventListener('install', (e) => {
+                e.waitUntil(
+                    caches.open(CACHE_NAME).then((cache) => cache.addAll(['./']))
+                );
+            });
+            self.addEventListener('fetch', (e) => {
+                e.respondWith(
+                    caches.match(e.request).then((res) => res || fetch(e.request))
+                );
+            });
+        `;
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        
+        navigator.serviceWorker.register(swUrl)
+            .then(() => console.log('PWA Service Worker Ativo!'))
+            .catch((err) => console.log('Erro ao registrar PWA SW:', err));
+    }
+
+    let deferredPrompt;
+    const pwaBanner = document.getElementById('pwaBanner');
+    const btnInstallPwa = document.getElementById('btnInstallPwa');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        pwaBanner.style.display = 'flex';
+    });
+
+    btnInstallPwa.addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    pwaBanner.style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
