@@ -1,25 +1,2 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Fundo do Ícone -->
-  <rect width="512" height="512" rx="110" fill="#4a3525"/>
-  <rect x="25" y="25" width="462" height="462" rx="90" fill="#f2ebd9"/>
-  
-  <!-- Sombra do Livro -->
-  <path d="M140 140 C 200 120, 310 120, 370 140 L 370 380 C 310 360, 200 360, 140 380 Z" fill="#b8a585" opacity="0.4"/>
-  
-  <!-- Capa do Livro -->
-  <path d="M150 130 C 210 110, 300 110, 360 130 L 360 370 C 300 350, 210 350, 150 370 Z" fill="#7a421d"/>
-  <path d="M150 130 C 180 140, 180 340, 150 370 Z" fill="#4a230c"/>
-  
-  <!-- Páginas Internas -->
-  <path d="M156 138 C 182 146, 182 334, 156 362 Z" fill="#fffdf7"/>
-  <path d="M354 138 C 328 146, 328 334, 354 362 Z" fill="#fffdf7"/>
-  
-  <!-- Símbolo Central -->
-  <circle cx="255" cy="210" r="45" fill="#f7e7ce"/>
-  <path d="M255 180 L255 240 M225 210 L285 210" stroke="#8c5a2b" stroke-width="8" stroke-linecap="round"/>
-  
-  <!-- Texto do Ícone Ajustado para duas linhas -->
-  <text x="255" y="290" font-family="Georgia, serif" font-size="22" font-weight="bold" fill="#4a3525" text-anchor="middle">RECEITAS</text>
-  <text x="255" y="320" font-family="Georgia, serif" font-size="20" font-weight="bold" fill="#8c5a2b" text-anchor="middle">DA DESSA</text>
-</svg>
-
+Delícias
+  da Dessa
