@@ -1,2 +1,34 @@
-Delícias
-  da Dessa
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Fundo Laranja -->
+  <rect width="512" height="512" fill="#FDBB6A"/>
+  
+  <!-- Ilustração da Cozinheira (Centralizada) -->
+  <g transform="translate(90, 90) scale(0.65)">
+    <path d="M220 80C220 80 220 20 160 20C100 20 100 80 100 80L95 115L95 200C95 200 95 235 140 235L180 235C225 235 225 200 225 200L225 115L220 80Z" fill="black"/>
+    <path d="M140 160L150 170L165 160L150 150Z" fill="#FDBB6A"/>
+    <path d="M135 180C135 180 145 190 160 190C175 190 185 180 185 180L180 175C180 175 170 180 160 180C150 180 140 175 140 175L135 180Z" fill="#FDBB6A"/>
+    <circle cx="160" cy="105" r="85" fill="black"/>
+    <path d="M180 40L200 65C200 65 215 80 210 100C205 120 185 135 160 135C135 135 115 120 110 100C105 80 120 65 120 65L140 40L160 50Z" fill="black"/>
+    <path d="M100 95L60 135L80 170L140 115Z" fill="black"/>
+    <path d="M220 95L260 135L240 170L180 115Z" fill="black"/>
+    <path d="M120 200L200 200C200 200 205 200 205 210L200 260C200 260 195 270 180 270L140 270C125 270 120 260 120 260L115 210C115 210 115 200 120 200Z" fill="white"/>
+    <path d="M125 150C125 150 140 160 160 160C180 160 195 150 195 150L190 145C190 145 175 155 160 155C145 155 130 145 130 145L125 150Z" fill="#FDBB6A"/>
+    <path d="M150 235L170 235L170 492L150 492Z" fill="white"/>
+    <path d="M220 235L220 250C220 250 220 270 200 270L100 270C80 270 80 250 80 250L80 235Z" fill="black"/>
+    <path d="M155 235L165 235L165 245L155 245Z" fill="white"/>
+    <circle cx="172" cy="98" r="6" fill="white"/>
+    <circle cx="148" cy="98" r="6" fill="white"/>
+    <path d="M160 392C193 392 220 365 220 332L100 332C100 365 127 392 160 392Z" fill="black"/>
+    <path d="M160 335L175 365L145 365Z" fill="#FDBB6A"/>
+    <path d="M330 362L250 362L250 382L330 382Z" fill="black"/>
+    <path d="M320 382L260 382L270 412L310 412Z" fill="black"/>
+    <path d="M272 345L308 345L300 357L280 357Z" fill="white"/>
+  </g>
+  
+  <!-- Texto -->
+  <text x="255" y="65" font-family="'Georgia', serif" font-size="38" font-weight="bold" fill="black" text-anchor="middle">Delícias</text>
+  <text x="255" y="105" font-family="'Georgia', serif" font-size="38" font-weight="bold" fill="black" text-anchor="middle">da Dessa</text>
+  
+  <!-- Linha inferior -->
+  <line x1="50" y1="450" x2="462" y2="450" stroke="black" stroke-width="5"/>
+</svg>
